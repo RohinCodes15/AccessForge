@@ -6,7 +6,6 @@ dollars: no per-ramp cost data for Fremont exists yet (docs/DATA_CATALOG.md).
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Any
 
 from accessforge_engine.contract import (
@@ -22,6 +21,8 @@ from accessforge_engine.contract import (
 from accessforge_engine.synthetic import SyntheticNetwork
 from sqlalchemy import Connection, Engine, text
 
+from .schemas import BarrierType
+
 # Metric projection for Fremont (AGENTS.md: compute lengths in EPSG:32610).
 METRIC_SRID = 32610
 REPAIR_UNIT_COST = 1.0
@@ -32,13 +33,18 @@ WALK_THRESHOLD_M = 800.0
 # A planned repair has not happened yet, so the barrier still blocks the route
 # (matches trip_network). Completed repairs await verification and are left out.
 ACTIVE_STATES = ("unverified", "confirmed", "repair_planned")
+# Barriers at or above this severity (1-5 scale) block wheelchair routes, whatever their type;
+# milder ones stay on the map but do not change routes. A modeling assumption chosen by the
+# maintainer on 2026-11-23, not a standard: point barriers can only be impassable or ignored.
+BLOCKING_SEVERITY = 3
 STEPS_TYPE = "steps"
 STEPS_SEVERITY = 5
+WHEELCHAIR_IMPASSABLE = frozenset({kind.value for kind in BarrierType} | {STEPS_TYPE})
 ORIGIN_GROUP = "all"
 # Equal weights: no measured profile mix exists for the pilot area.
 PROFILES = (
     Profile(
-        "wheelchair", 0.5, None, frozenset({"missing_curb_ramp", STEPS_TYPE}), {},
+        "wheelchair", 0.5, None, WHEELCHAIR_IMPASSABLE, {},
         WALK_THRESHOLD_M,
     ),
     Profile("pedestrian", 0.5, None, frozenset(), {}, WALK_THRESHOLD_M),
@@ -62,6 +68,7 @@ _BARRIERS = f"""
         ORDER BY n.geom <-> l.geom LIMIT 1
     ) near
     WHERE b.state::text = ANY(:states)
+      AND b.severity >= :min_severity
       AND ST_DWithin(near.geom::geography, l.geom::geography, {MAX_BARRIER_LINK_M})
     ORDER BY b.id
 """
@@ -81,18 +88,19 @@ class PilotNetwork:
     destination_names: Mapping[str, str | None]
 
 
-@lru_cache(maxsize=1)
 def load_pilot_network(engine: Engine) -> PilotNetwork | None:
-    """None when no pilot network is loaded.
-
-    shortcut: cached for the process lifetime, so restart the API after re-running the ingest.
-    """
+    """None when no pilot network is loaded. Reads the database on every call (no cache), so
+    each plan refresh sees the latest reports and reviews."""
     with engine.connect() as connection:
         nodes = _rows(connection, _NODES)
         if not nodes:
             return None
         edges = _rows(connection, _EDGES)
-        barrier_rows = _rows(connection, _BARRIERS, {"states": list(ACTIVE_STATES)})
+        barrier_rows = _rows(
+            connection,
+            _BARRIERS,
+            {"states": list(ACTIVE_STATES), "min_severity": BLOCKING_SEVERITY},
+        )
         origins = _rows(connection, _ORIGINS)
         destinations = _rows(connection, _DESTINATIONS)
     barriers = tuple(

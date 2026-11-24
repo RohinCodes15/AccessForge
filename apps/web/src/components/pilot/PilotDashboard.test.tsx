@@ -32,7 +32,7 @@ it("shows verified and pending counts, provenance, and an honest pilot label", a
   expect(
     screen.getByText(/Not affiliated with or endorsed by the City of Fremont/),
   ).toBeInTheDocument();
-  expect(screen.getByText(/no modeled accessibility estimate for Fremont yet/)).toBeInTheDocument();
+  expect(screen.getByText(/runs on real Fremont streets from OpenStreetMap/)).toBeInTheDocument();
   expect(vi.mocked(fetch).mock.calls[0][0]).toBe("/api/reports/summary");
 
   const csv = decodeURIComponent(
@@ -132,6 +132,7 @@ it("validates, sends anonymous feedback, and reports rate limits", async () => {
   fetchMock.mockResolvedValueOnce(new Response("", { status: 429 }));
   await user.selectOptions(screen.getByRole("combobox", { name: "What is it about?" }), "other");
   await user.type(screen.getByRole("textbox", { name: "Your feedback" }), "Again");
-  await user.click(screen.getByRole("button", { name: "Send feedback" }));
+  // Waits out the previous send's success label on the particle button.
+  await user.click(await screen.findByRole("button", { name: "Send feedback" }, { timeout: 3000 }));
   expect(await screen.findByText(/Too many messages/)).toBeInTheDocument();
 });

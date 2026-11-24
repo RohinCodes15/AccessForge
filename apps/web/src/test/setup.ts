@@ -26,3 +26,18 @@ if (!("IntersectionObserver" in globalThis)) {
     configurable: true,
   });
 }
+
+// jsdom has no ResizeObserver either; ParticleButton uses one to size itself to its label.
+class ResizeObserverStub implements ResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
+if (!("ResizeObserver" in globalThis)) {
+  Object.defineProperty(globalThis, "ResizeObserver", {
+    value: ResizeObserverStub,
+    writable: true,
+    configurable: true,
+  });
+}

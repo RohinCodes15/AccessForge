@@ -1,6 +1,4 @@
 import {
-  METHOD_LABELS,
-  METHOD_NOTES,
   formatNumber,
   recommended,
   repairName,
@@ -9,11 +7,9 @@ import {
   type Plan,
 } from "@/lib/planning-api";
 import { SpotlightCard } from "@/components/motion/SpotlightCard";
+import { MethodComparison } from "./MethodComparison";
 import { NetworkDiagram } from "./NetworkDiagram";
-
-const PERCENT = 100;
-const TH = "border-b border-line px-3 py-2 text-left font-semibold text-ink";
-const TD = "border-b border-line px-3 py-2 align-top";
+import { PERCENT, TD, TH } from "./result-styles";
 
 // Result sections rise in one after another when a plan arrives, like a results reveal.
 const REVEAL_STEP_MS = 120;
@@ -201,69 +197,7 @@ export function PlanResults({ plan }: { readonly plan: Plan }) {
         </div>
       </section>
 
-      <section aria-labelledby="methods-heading" className="af-rise" style={reveal(3)}>
-        <h2 id="methods-heading" className="af-h2">
-          How other ways of choosing compare
-        </h2>
-        <p className="mt-1 max-w-prose text-muted">
-          Same network, same budget. Methods that rank barriers one at a time can spend money on
-          repairs that open no complete route.
-        </p>
-        <div
-          role="region"
-          aria-label="Method comparison, scrollable table"
-          tabIndex={0}
-          className="mt-4 overflow-x-auto rounded-lg border border-line bg-surface"
-        >
-          <table className="w-full min-w-[38rem] border-collapse text-sm">
-            <caption className="sr-only">Modeled gain of each selection method</caption>
-            <thead>
-              <tr>
-                <th scope="col" className={TH}>
-                  Method
-                </th>
-                <th scope="col" className={TH}>
-                  Repairs chosen
-                </th>
-                <th scope="col" className={TH}>
-                  Cost
-                </th>
-                <th scope="col" className={TH}>
-                  Modeled gain
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {plan.plans.map((item) => {
-                const share = best.delta_a > 0 ? (item.delta_a / best.delta_a) * PERCENT : 0;
-                return (
-                  <tr key={item.method}>
-                    <th scope="row" className={`${TD} text-left text-ink`}>
-                      <span className="font-semibold">{METHOD_LABELS[item.method]}</span>
-                      <span className="block font-normal text-muted">
-                        {METHOD_NOTES[item.method]}
-                      </span>
-                    </th>
-                    <td className={TD}>{repairNames(plan.network, item.selected_repair_ids)}</td>
-                    <td className={TD}>{formatNumber(item.total_cost)}</td>
-                    <td className={TD}>
-                      {formatNumber(item.delta_a)}
-                      <span className="block text-muted">
-                        {formatNumber(share)}% of the best plan
-                      </span>
-                      <span
-                        aria-hidden="true"
-                        className="mt-1 block h-2 rounded bg-accent"
-                        style={{ width: `${Math.max(share, 1)}%` }}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <MethodComparison plan={plan} style={reveal(3)} />
 
       <section aria-labelledby="who-heading" className="af-rise" style={reveal(4)}>
         <h2 id="who-heading" className="af-h2">

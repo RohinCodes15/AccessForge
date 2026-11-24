@@ -70,6 +70,23 @@ it("rejects an unusable budget without calling the service", async () => {
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
+it("tells pilot users which reports the plan includes and that new ones are added", async () => {
+  const pilot = { ...corridor, dataset: "fremont_pilot", barriers_as_of: "2026-11-23T20:15:00Z" };
+  fetchMock.mockImplementation(() =>
+    Promise.resolve(new Response(JSON.stringify({ data: pilot }))),
+  );
+
+  render(<RepairPlanner />);
+
+  expect(
+    await screen.findByText(/Includes reports and reviews recorded up to/),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(/New reports and review decisions are added automatically/),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/severity 3 or higher, of any type/)).toBeInTheDocument();
+});
+
 it("defaults to the Fremont pilot and accepts only its precomputed budgets", async () => {
   const user = userEvent.setup();
   render(<RepairPlanner />);
@@ -176,7 +193,8 @@ it("compares repair choices, cost and modeled trips only on matching network sna
   expect(changes).toHaveTextContent("Repairs removed: Repair 1, Repair 2");
   expect(changes).toHaveTextContent("o0 to clinic: 100% to 0%");
   snapshot = "newer";
-  await user.click(screen.getByRole("button", { name: "Run plan" }));
+  // Waits out the previous run's success label on the particle button.
+  await user.click(await screen.findByRole("button", { name: "Run plan" }, { timeout: 3000 }));
   expect(await screen.findByText(/run both budgets on the same network snapshot/i)).toBeVisible();
   expect(screen.queryByRole("region", { name: "Budget changes" })).toBeNull();
 });

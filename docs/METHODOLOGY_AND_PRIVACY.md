@@ -21,7 +21,7 @@ Steps 2 to 5 are not possible yet: the audit protocol is only a draft (`AUDIT_PR
 ## 3. Stakeholder feedback plan
 
 - Who: residents with disabilities and local disability organizations first, then city public works or ADA staff.
-- How: the anonymous feedback form on the pilot dashboard (topic and message only). It also shows an email address if the deployment sets `FEEDBACK_EMAIL`. Form feedback is stored in the `feedback` table and has no public read route; read it with SQL (`docs/DEPLOYMENT.md` §5).
+- How: the anonymous feedback form on the pilot dashboard and on the accessibility page, where it opens with the "Accessibility problem" topic chosen (topic and message only). Both pages also show an email address if the deployment sets `FEEDBACK_EMAIL`. Form feedback is stored in the `feedback` table and has no public read route; read it with SQL (`docs/DEPLOYMENT.md` §5).
 - What to ask: Are the barrier types the right ones? Is "verified" explained honestly? Would the planner's output be usable in a real budget discussion, and what is missing?
 - Record what was heard in `docs/DISCOVERY.md`, including what could not be confirmed.
 

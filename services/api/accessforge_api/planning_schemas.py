@@ -1,5 +1,6 @@
 """Public planning contracts; every figure is a modeled engine output."""
 
+from datetime import datetime
 from enum import Enum
 from typing import Annotated
 
@@ -133,3 +134,5 @@ class PlanView(FrozenInput):
     snapshot_id: str  # identifies the exact network instance; route analysis checks it
     network: NetworkView
     plans: tuple[MethodPlanView, ...]
+    # Fremont pilot only: the plans include every barrier recorded before this time.
+    barriers_as_of: datetime | None = None

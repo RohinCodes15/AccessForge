@@ -48,9 +48,7 @@ TINY_PILOT = f"""
 def tiny_pilot(postgis_engine: Engine) -> Iterator[Engine]:
     with postgis_engine.begin() as connection:
         connection.execute(text(TINY_PILOT))
-    load_pilot_network.cache_clear()
     yield postgis_engine
-    load_pilot_network.cache_clear()
 
 
 @pytest.mark.integration
@@ -73,13 +71,10 @@ def test_pilot_network_is_built_from_postgis_rows(tiny_pilot: Engine) -> None:
 def test_precomputed_plan_repairs_the_curb_that_blocks_the_only_path(
     tiny_pilot: Engine,
 ) -> None:
-    with (
-        patch.dict(pilot_plans._plans, clear=True),
-        patch.object(pilot_plans, "_network", []),
-    ):
-        pilot_plans._compute(tiny_pilot)
-        plan = pilot_plans.pilot_plan(1.0)
+    snapshot = pilot_plans.compute_snapshot(tiny_pilot)
 
+    assert snapshot is not None
+    plan = pilot_plans.pilot_plan(1.0, snapshot)
     best = next(p for p in plan.plans if p.method == PlanningMethod.exhaustive)
     assert plan.synthetic is False
     assert best.selected_repair_ids == (plan.network.repairs[0].id,)
@@ -97,8 +92,9 @@ def test_pilot_budget_outside_the_precomputed_set_is_rejected() -> None:
 
 
 def test_pilot_plan_still_computing_answers_503_with_retry_after() -> None:
+    idle = pilot_plans._Refresher(lambda _: None)  # never publishes a snapshot
     with (
-        patch.dict(pilot_plans._plans, clear=True),
+        patch.object(pilot_plans, "_refresher", idle),
         TestClient(application()) as client,
     ):
         response = client.get(

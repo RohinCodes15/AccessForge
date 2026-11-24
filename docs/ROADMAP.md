@@ -43,7 +43,7 @@ Phases are gated by acceptance criteria, not dates. No phase is "done" until all
 - [x] Discovery notes exist (`docs/DISCOVERY.md`). They record that **no conversations have happened yet**.
 - [x] Origins and destinations snap to the nearest routable node within 200 m (2026-11-18). Before that, exact-position matching linked 0 of 53 census blocks.
 - [x] First modeled pilot finding, from unverified OSM curbs (`docs/PILOT_FINDING.md`).
-- [x] The planner and route analysis run on the Fremont pilot network (dataset `fremont_pilot`, default in the UI). Repairs cost one repair unit each. Budgets are limited to 0 to 2 units because exhaustive search does not finish at 3. Plans are precomputed when the API starts.
+- [x] The planner and route analysis run on the Fremont pilot network (dataset `fremont_pilot`, default in the UI). Repairs cost one repair unit each. Budgets are limited to 0 to 2 units because exhaustive search does not finish at 3. Plans are computed when the API starts and recomputed in the background after every new report or review (2026-11-23). Community reports of any type at severity 3 or higher block wheelchair routes.
 - [ ] OSM coverage checked against imagery (needs a person).
 - [ ] Team field audit with photos. The protocol is drafted (`docs/AUDIT_PROTOCOL.md`); the audit itself has not been done.
 - [ ] Contact Fremont staff, disability organizations and Project Sidewalk.

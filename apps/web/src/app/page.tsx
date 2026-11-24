@@ -71,7 +71,7 @@ const STATUS = [
     tone: "modeled",
     items: [
       "Every access number is an estimate from a transparent model",
-      "Planner networks and costs are illustrative examples, not Fremont streets or dollars",
+      "The planner uses real Fremont streets from OpenStreetMap, with unverified barriers and repair units instead of dollars",
     ],
   },
 ] as const;
@@ -127,7 +127,7 @@ const ROUTING_POINTS = [
 const BUDGET_POINTS = [
   "Repairs are chosen as a group within the budget, because a repair can matter more alongside others.",
   "Each recommendation carries its explanation, so a planner can see why it was chosen.",
-  "Costs in the planner are generated examples until real Fremont estimates exist.",
+  "Costs in the planner are repair units, one per barrier, not dollars, until real Fremont estimates exist.",
 ] as const;
 
 // The hero map's tiles come from here; connecting during HTML parse saves a round trip later.

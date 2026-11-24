@@ -2,7 +2,7 @@
 
 from accessforge_engine.optimization import ENGINE_VERSION
 
-from .pilot_plans import pilot_network, pilot_plan
+from .pilot_plans import pilot_plan, pilot_snapshot
 from .planning_adapter import demo_network, network_snapshot_id, run_plan
 from .planning_schemas import PlanningDataset, PlanningMethod
 from .routing_core import RouteQuery, compare_routes
@@ -30,8 +30,10 @@ def analyze_demo_route(
     Raises StaleSnapshotError when expected_snapshot_id names a different snapshot.
     """
     if dataset == PlanningDataset.fremont_pilot:
-        planned = pilot_plan(budget)
-        network = pilot_network().network
+        # One snapshot, so a refresh mid-request cannot pair a plan with a newer network.
+        snapshot = pilot_snapshot()
+        planned = pilot_plan(budget, snapshot)
+        network = snapshot.network.network
     else:
         planned = run_plan(dataset, budget)
         network = demo_network(dataset)

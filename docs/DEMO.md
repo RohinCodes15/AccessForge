@@ -1,6 +1,6 @@
 # Demonstrating AccessForge
 
-Written 2026-11-16. Everything here can be reproduced from this repository. Numbers marked **modeled** come from the optimization engine running on synthetic networks; none describes a real place.
+Written 2026-11-16. Everything here can be reproduced from this repository. Numbers marked **modeled** come from the optimization engine. The demo scenarios below use synthetic networks and describe no real place.
 
 ## The problem in two sentences
 
@@ -18,11 +18,12 @@ A sidewalk route is only usable if every piece of it is. Repair lists that rank 
 |---|---|
 | Barrier reporting, map with matching list, filters, pagination | Working, tested against a real PostGIS database |
 | Reviewer sign-in, verify/reject with audit log | Working, tested against a real PostGIS database |
-| Repair planner: budget, four selection methods compared, explanations, saved scenarios, CSV/JSON export | Working, on synthetic networks only |
+| Repair planner: budget, four selection methods compared, explanations, saved scenarios, CSV/JSON export | Working. Default network: real Fremont streets (OSM) with unverified barriers, budget in repair units, not dollars. Generated example networks also available |
 | Pilot dashboard: report counts by status and type, CSV export, anonymous feedback form | Working |
 | Planner exports: CSV with generation date, source and method; JSON; print view | Working |
 | Accessibility numbers | **Modeled** estimates from a simplified network model |
-| Fremont sidewalk network, destinations, repair costs | Not loaded. Planned (ROADMAP Phase 2) |
+| Fremont walking network, destinations, population | Loaded from OSM and the 2020 Census for the pilot area; the planner uses it by default |
+| Real Fremont repair costs, on-site barrier checks | Not done. Planned (ROADMAP Phase 2) |
 | Uncertainty sampling, equity-targeted optimization, city-scale solver | Not available in the product. See `services/engine/README.md` |
 | Photos, user accounts | Not built |
 | Use by, or agreement with, the City of Fremont or any organization | None |
@@ -74,11 +75,11 @@ Costs are abstract units, not dollars. Do not quote these numbers as evidence ab
 | 0:48 | `/verify`, sign in, verify with a reason | "A reviewer confirms it and has to say why. That is logged permanently." |
 | 0:55 | `/pilot` | "The dashboard separates verified from unverified, and says what the data cannot tell you." |
 
-Close with: "The planner runs on generated example networks today. Loading Fremont's sidewalk network is the next step."
+Close with: "The planner runs on real Fremont streets from OpenStreetMap. Its barriers are unverified and its costs are repair units, not dollars. Checking those curbs on site is the next step."
 
 ## Architecture in one paragraph
 
-The browser only talks to a Next.js web app (`apps/web`). The web app proxies `/api/*` to a private FastAPI service (`services/api`), which validates every request, stores reports, reviews and feedback in PostgreSQL with PostGIS, and runs the planning engine (`services/engine`, pure Python with NetworkX) in-process on synthetic networks. Reviewers sign in with a pre-shared key that the server stores only as a SHA-256 digest; the session is an HttpOnly, SameSite=Strict cookie. There are no accounts for reporters, no photo uploads, and no third-party scripts. The full design is in `docs/ARCHITECTURE.md`.
+The browser only talks to a Next.js web app (`apps/web`). The web app proxies `/api/*` to a private FastAPI service (`services/api`), which validates every request, stores reports, reviews and feedback in PostgreSQL with PostGIS, and runs the planning engine (`services/engine`, pure Python with NetworkX) in-process on the Fremont pilot network and generated example networks. Reviewers sign in with a pre-shared key that the server stores only as a SHA-256 digest; the session is an HttpOnly, SameSite=Strict cookie. There are no accounts for reporters, no photo uploads, and no third-party scripts. The full design is in `docs/ARCHITECTURE.md`.
 
 ## Community impact to date (factual)
 
@@ -87,8 +88,8 @@ As of 2026-11-17:
 - **Reports from residents:** none collected in a pilot yet. The live count is on `/pilot`.
 - **Repairs made or influenced:** none.
 - **Conversations with the City of Fremont, disability organizations, or Project Sidewalk:** none yet (`docs/DISCOVERY.md`).
-- **Fremont data loaded:** the OSM pedestrian network, destinations, Census population and CDC PLACES disability estimates for the pilot area (`docs/PILOT_AREA.md`), plus 20 unverified OSM `kerb=raised` barriers. The planner does not run on this network yet.
-- **Modeled results:** only on synthetic networks (above). They show how the method behaves. They are not evidence of impact.
+- **Fremont data loaded:** the OSM pedestrian network, destinations, Census population and CDC PLACES disability estimates for the pilot area (`docs/PILOT_AREA.md`), plus 20 unverified OSM `kerb=raised` barriers. The planner runs on this network by default, at one repair unit per curb and budgets of 0 to 2 units.
+- **Modeled results:** on synthetic networks (above), and on the Fremont pilot network from unverified OSM curbs (`docs/PILOT_FINDING.md`). They show how the method behaves. They are not evidence of impact.
 
 Update this section only with things that can be checked. Do not round "no data" up to an estimate.
 
@@ -118,4 +119,4 @@ Keep the "Synthetic demonstration" notice and the `/pilot` "Run by" line (not af
 
 ## Plain summary for outreach
 
-> AccessForge is an independent, early-stage project exploring how communities could choose sidewalk repairs so that limited budgets open the most accessible routes. People can report barriers, trained reviewers can confirm them, and a planning tool compares repair combinations within a budget. Today the planning tool runs on generated example networks, not real streets. AccessForge has no partnership with, or endorsement from, the City of Fremont or any other organization, and has not yet measured any real-world outcome. We are looking for feedback from disability advocates, residents, and city staff before running a pilot.
+> AccessForge is an independent, early-stage project exploring how communities could choose sidewalk repairs so that limited budgets open the most accessible routes. People can report barriers, trained reviewers can confirm them, and a planning tool compares repair combinations within a budget. Today the planning tool runs on real Fremont streets from OpenStreetMap, with barriers nobody has checked on site and costs in repair units, not dollars. AccessForge has no partnership with, or endorsement from, the City of Fremont or any other organization, and has not yet measured any real-world outcome. We are looking for feedback from disability advocates, residents, and city staff before running a pilot.

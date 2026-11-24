@@ -20,12 +20,12 @@ import {
   type RouteQuery,
 } from "@/lib/routing-api";
 import type { Network } from "@/lib/planning-api";
+import ParticleButton from "@/components/kokonutui/particle-button";
+import { useActionStatus } from "@/components/motion/use-action-status";
 import { RouteResults } from "./RouteResults";
 
 const DEFAULT_DATASET: Dataset = PILOT_DATASET;
 const BUDGET_ERROR_ID = "route-budget-error";
-const BUTTON =
-  "inline-flex min-h-11 items-center rounded-md border px-4 font-semibold disabled:opacity-60";
 
 type Selection = {
   readonly origin: string;
@@ -149,8 +149,13 @@ export function RouteAnalysis({
     clearResults();
   }
 
+  // A check cancelled by an input change (no result, no error) settles quietly.
+  const checkStatus = useActionStatus(isLoading, error ? "error" : analysis ? "success" : null);
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    // The particle button stays enabled (and shows its spinner) while a check is in flight.
+    if (isLoading) return;
     const budget = parseBudget(budgetText);
     const problem = budgetProblem(dataset, budget);
     if (problem || budget === null) {
@@ -292,13 +297,17 @@ export function RouteAnalysis({
           />
         </div>
         <div className="flex items-end">
-          <button
+          <ParticleButton
             type="submit"
-            disabled={isLoading || !hasChoices}
-            className={`${BUTTON} w-full justify-center border-accent bg-accent text-surface`}
+            variant="accent"
+            disabled={!hasChoices}
+            status={checkStatus}
+            pendingLabel="Checking…"
+            successLabel="Route checked"
+            errorLabel="Check failed"
           >
-            {isLoading ? "Checking…" : "Check route"}
-          </button>
+            Check route
+          </ParticleButton>
         </div>
         {budgetError ? (
           <p id={BUDGET_ERROR_ID} role="alert" className="font-medium text-warning sm:col-span-2">

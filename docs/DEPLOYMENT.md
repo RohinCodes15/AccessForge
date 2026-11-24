@@ -61,7 +61,7 @@ Open the site at `http://localhost:3000`, not `http://127.0.0.1:3000`: the Next 
 | `TRUSTED_PROXY_IPS` | API | no | Comma-separated IPs of the web server(s). Rate limits then use the rightmost `X-Forwarded-For` entry from those peers. **Set it only when an edge proxy that sets `X-Forwarded-For` sits in front of the web app**: Next.js passes a client-supplied `X-Forwarded-For` through unchanged, so without an edge proxy the header is spoofable. Empty (default) means every client behind the web app shares one limit. |
 | `TEST_DATABASE_URL` | API tests | no | Enables the real-PostGIS tests. Must name a database ending in `_test`. |
 | `API_BASE_URL` | Web (server only) | no | Origin of the API. Read when Next starts or builds. Never sent to the browser. |
-| `FEEDBACK_EMAIL` | Web (server only) | no | Address shown on the pilot dashboard. Read at build time. |
+| `FEEDBACK_EMAIL` | Web (server only) | no, but set it for any public deployment | Address shown on the pilot dashboard and on `/accessibility` for accessibility problems. Without it, the anonymous form is the only channel and nobody can get a reply. Read at build time. |
 
 No secret belongs in the repository. `.env` files are ignored by git; only `.env.example` files with placeholders are committed.
 

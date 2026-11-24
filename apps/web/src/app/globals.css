@@ -193,7 +193,7 @@ body {
 }
 @keyframes af-highlight {
   from {
-    background-size: 0% 0.55em;
+    background-size: 0% 0.14em;
   }
 }
 @keyframes af-dash-grow {
@@ -221,10 +221,11 @@ body {
         animation-range: entry 0% entry 90%;
       }
     }
-    /* Bold phrases get a street-paint highlighter stroke as they scroll into view. */
+    /* Bold phrases get a thin street-paint line drawn under them as they scroll into view,
+       below the letters rather than over them. */
     :where(main:not(:has([data-page="overview"]))) :where(strong) {
-      background: linear-gradient(rgb(242 194 48 / 0.45), rgb(242 194 48 / 0.45)) no-repeat 0 88% /
-        100% 0.55em;
+      background: linear-gradient(var(--color-marker), var(--color-marker)) no-repeat 0 100% / 100%
+        0.14em;
       box-decoration-break: clone;
       @supports (animation-timeline: view()) {
         animation: af-highlight ease-out both;
@@ -237,6 +238,51 @@ body {
       transform-origin: left;
       animation: af-dash-grow 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
     }
+    /* Form fields deal in one after another as the form scrolls into view (the forms sit
+       below the fold, so a load-time entrance would play unseen). */
+    :where(main:not(:has([data-page="overview"]))) :where(form) > :where(div, fieldset) {
+      animation: af-text-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      animation-delay: calc(min(sibling-index(), 8) * 70ms + 120ms);
+      @supports (animation-timeline: view()) {
+        animation: af-text-in linear backwards;
+        animation-timeline: view();
+        animation-range: entry 10% entry 80%;
+      }
+    }
+    /* A text-only field label underlines itself while its field is in use: a thin teal
+       underline drops into place under the words (faint on hover). A real text underline,
+       so it skips descenders and never touches a letter, and sits clear of the field's focus
+       ring. The letters also ripple then, see components/motion/TextRipples.tsx. */
+    :where(main:not(:has([data-page="overview"]))) :where(div > label) {
+      text-decoration-line: underline;
+      text-decoration-thickness: 2px;
+      text-decoration-color: transparent;
+      text-decoration-skip-ink: auto;
+      text-underline-offset: 0.6em;
+      transition:
+        text-decoration-color 0.3s ease-out,
+        text-underline-offset 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    :where(main:not(:has([data-page="overview"])))
+      :where(div > label:hover, div:has(> :is(input, select, textarea):hover) > label) {
+      text-decoration-color: rgb(10 107 98 / 0.35);
+      text-underline-offset: 0.18em;
+    }
+    :where(main:not(:has([data-page="overview"])))
+      :where(div:has(> :is(input, select, textarea):focus-visible) > label) {
+      text-decoration-color: var(--color-accent);
+      text-underline-offset: 0.18em;
+    }
+  }
+  /* While a text ripple plays, the real text hides under its animated, aria-hidden copy.
+     Unlayered, so it beats the colour utilities the headings and labels carry. */
+  [data-af-ripple] {
+    color: transparent;
+  }
+  .af-ripple {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
   }
   /* Text links lift their underline on hover and focus. Unlayered so it beats the
      transition-colors that af-link brings from the utilities layer. */

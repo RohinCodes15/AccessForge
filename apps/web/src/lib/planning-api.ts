@@ -17,7 +17,7 @@ export const DATASET_LABELS: Record<Dataset, string> = {
 };
 export const DATASET_NOTES: Record<Dataset, string> = {
   fremont_pilot:
-    "The walking network, homes (2020 census blocks), and destinations around Fremont BART, with 20 raised curbs mapped in OpenStreetMap and not yet checked on site. Budget is in repair units, one per curb, not dollars: choose 0, 1, or 2.",
+    "The walking network, homes (2020 census blocks), and destinations around Fremont BART. Barriers are raised curbs mapped in OpenStreetMap plus community reports of severity 3 or higher, verified or not. Budget is in repair units, one per barrier, not dollars: choose 0, 1, or 2.",
   corridor:
     "One home, one clinic, and two step barriers in a row. Fixing only one of them opens nothing for a wheelchair user.",
   grid_scattered: "A 4 by 3 block grid with eight barriers placed at random.",
@@ -89,6 +89,8 @@ export type Network = {
 };
 export type Plan = {
   readonly snapshot_id?: string;
+  /** Fremont pilot only: the plan includes every barrier recorded before this time (ISO 8601). */
+  readonly barriers_as_of?: string | null;
   readonly dataset: Dataset;
   readonly synthetic: boolean;
   readonly budget: number;
@@ -171,6 +173,14 @@ export function recommended(plan: Plan): MethodPlan {
 const NUMBER_FORMAT = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 export function formatNumber(value: number): string {
   return NUMBER_FORMAT.format(value);
+}
+
+const AS_OF_FORMAT = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
+/** "Includes reports and reviews recorded up to …", or null when the plan has no valid time. */
+export function barriersAsOfText(plan: Plan): string | null {
+  const time = plan.barriers_as_of ? new Date(plan.barriers_as_of) : null;
+  if (!time || Number.isNaN(time.getTime())) return null;
+  return `Includes reports and reviews recorded up to ${AS_OF_FORMAT.format(time)}.`;
 }
 
 /** Plain words for the first barrier a repair removes, e.g. "step on segment e0". */

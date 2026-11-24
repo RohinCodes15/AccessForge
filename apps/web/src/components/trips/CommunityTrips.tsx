@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { isReportId } from "@/lib/reports-api";
+import ParticleButton from "@/components/kokonutui/particle-button";
+import { useActionStatus } from "@/components/motion/use-action-status";
 import { LandmarkSearch } from "./LandmarkSearch";
 
 const purposes = {
@@ -174,6 +176,7 @@ function Nominate({
   const [start, setStart] = useState(""),
     [end, setEnd] = useState("");
   const action = useWrite();
+  const nominateStatus = useActionStatus(action.busy, action.error ? "error" : "success");
   const [wasAttempted, setWasAttempted] = useState(false);
   const invalid = start !== "" && start === end;
   const isMissing = wasAttempted && (!start || !end);
@@ -257,9 +260,16 @@ function Nominate({
               </select>
             </label>
 
-            <button type="submit" className="af-button-primary" disabled={action.busy || invalid}>
-              {action.busy ? "Submitting…" : "Nominate trip"}
-            </button>
+            <ParticleButton
+              type="submit"
+              disabled={invalid}
+              status={nominateStatus}
+              pendingLabel="Submitting…"
+              successLabel="Trip nominated"
+              errorLabel="Not submitted"
+            >
+              Nominate trip
+            </ParticleButton>
           </fieldset>
           {action.error && <p role="alert">{action.error}</p>}
         </>

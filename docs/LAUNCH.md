@@ -39,7 +39,7 @@ Send from a real person's address. Keep it short. Do not attach the app; link to
 >
 > I'm [your name], working on AccessForge, an independent, volunteer-run project. It is not affiliated with the City of Fremont. It lets residents report sidewalk barriers such as missing curb ramps or blocked paths. Volunteer reviewers check the reports, and a planning tool shows which *combination* of repairs would open the most accessible walking routes for a given budget.
 >
-> It is early. The planning tool currently runs on example networks, not real Fremont costs, and no repairs have resulted from it. Before we invite residents to use it, we want to hear from people with lived experience and from [organization]'s perspective:
+> It is early. The planning tool runs on real Fremont streets from OpenStreetMap, but nobody has checked its barriers on site, it uses repair units instead of real costs, and no repairs have resulted from it. Before we invite residents to use it, we want to hear from people with lived experience and from [organization]'s perspective:
 >
 > - Are we asking about the right kinds of barriers?
 > - Is anything about the site hard to use with your assistive technology?

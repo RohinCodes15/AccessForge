@@ -232,10 +232,10 @@ export function PilotDashboard({ feedbackEmail }: { readonly feedbackEmail: stri
           Modeled repair planning
         </h2>
         <p className="mt-2 max-w-prose">
-          There is no modeled accessibility estimate for Fremont yet. The pedestrian network,
-          destinations, and repair costs for the pilot area have not been loaded, so the
-          optimization engine currently runs only on labeled synthetic networks. Compare scenarios
-          and download results in the{" "}
+          The repair planner runs on real Fremont streets from OpenStreetMap around Fremont BART.
+          Its barriers are raised curbs mapped in OpenStreetMap, which nobody has checked on site,
+          and community reports of severity 3 or higher. Its budget is in repair units, not dollars.
+          Every result is a modeled estimate. Compare scenarios and download results in the{" "}
           <Link href="/planner" className="font-semibold text-accent underline">
             repair planner
           </Link>

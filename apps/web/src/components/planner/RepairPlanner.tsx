@@ -6,6 +6,7 @@ import {
   DATASET_LABELS,
   DATASET_NOTES,
   PILOT_DATASET,
+  barriersAsOfText,
   budgetProblem,
   dataUri,
   defaultBudget,
@@ -19,16 +20,17 @@ import {
   type Dataset,
   type Plan,
 } from "@/lib/planning-api";
+import ParticleButton from "@/components/kokonutui/particle-button";
+import { useActionStatus } from "@/components/motion/use-action-status";
 import { BudgetComparison } from "./BudgetComparison";
 import { PlanResults } from "./PlanResults";
+import { TD, TH } from "./result-styles";
 
 const DEFAULT_DATASET: Dataset = PILOT_DATASET;
 const MAX_SAVED = 6;
 const BUDGET_ERROR_ID = "budget-error";
 const BUTTON =
   "inline-flex min-h-11 items-center rounded-md border px-4 font-semibold disabled:opacity-60";
-const TH = "border-b border-line px-3 py-2 text-left font-semibold text-ink";
-const TD = "border-b border-line px-3 py-2 align-top";
 
 type Run = { readonly dataset: Dataset; readonly budget: number; readonly attempt: number };
 
@@ -66,8 +68,12 @@ export function RepairPlanner({
     return () => controller.abort();
   }, [run]);
 
+  const runStatus = useActionStatus(isLoading, error ? "error" : "success");
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    // The particle button stays enabled (and shows its spinner) while a run is in flight.
+    if (isLoading) return;
     const budget = parseBudget(budgetText);
     const problem = budgetProblem(dataset, budget);
     if (problem || budget === null) {
@@ -103,6 +109,12 @@ export function RepairPlanner({
               Real Fremont streets, unverified barriers
             </h2>
             <p className="mt-1">Modeled estimates. Budget is in repair units, not dollars.</p>
+            {plan?.dataset === PILOT_DATASET && barriersAsOfText(plan) ? (
+              <p className="mt-1">
+                {barriersAsOfText(plan)} New reports and review decisions are added automatically;
+                the plan can take a few minutes to update.
+              </p>
+            ) : null}
             {/* Full provenance stays one click away; the visible line keeps the key caveats. */}
             <details className="mt-2">
               <summary className="inline-flex min-h-6 cursor-pointer items-center font-semibold underline underline-offset-4">
@@ -110,9 +122,12 @@ export function RepairPlanner({
               </summary>
               <p className="mt-1">
                 The network, homes, and destinations come from OpenStreetMap and the 2020 Census.
-                The raised curbs are mapped in OpenStreetMap and nobody has checked them on site.
-                Budget is in repair units, one per curb, not dollars. Results are modeled estimates,
-                not inspections, compliance findings, or safe routes.
+                Barriers come from two places: raised curbs mapped in OpenStreetMap, which nobody
+                has checked on site, and community reports. A reported barrier with severity 3 or
+                higher, of any type, is treated as blocking wheelchair users; milder reports stay on
+                the map but do not change routes. A barrier more than 15 m from the mapped walking
+                network is left out. Budget is in repair units, one per barrier, not dollars.
+                Results are modeled estimates, not inspections, compliance findings, or safe routes.
               </p>
             </details>
           </>
@@ -172,13 +187,16 @@ export function RepairPlanner({
             onChange={(event) => setBudgetText(event.target.value)}
           />
         </div>
-        <button
+        <ParticleButton
           type="submit"
-          disabled={isLoading}
-          className={`${BUTTON} justify-center border-accent bg-accent text-surface`}
+          variant="accent"
+          status={runStatus}
+          pendingLabel="Running…"
+          successLabel="Plan ready"
+          errorLabel="Run failed"
         >
-          {isLoading ? "Running…" : "Run plan"}
-        </button>
+          Run plan
+        </ParticleButton>
         <p id="dataset-note" className="text-muted sm:col-span-3">
           {DATASET_NOTES[dataset]}
         </p>
@@ -214,14 +232,16 @@ export function RepairPlanner({
               Compare and export
             </h2>
             <div className="mt-4 flex flex-wrap gap-3 print:hidden">
-              <button
-                type="button"
+              <ParticleButton
+                // A new plan starts the button fresh, so it never says "saved" for the old one.
+                key={`${plan.dataset}-${plan.budget}-${plan.snapshot_id}`}
+                variant="secondary"
                 disabled={isSaved || saved.length >= MAX_SAVED}
-                className={`${BUTTON} border-line bg-surface text-ink`}
+                successLabel="Scenario saved"
                 onClick={() => setSaved((items) => [...items, plan])}
               >
                 {isSaved ? "Scenario saved" : "Save scenario to compare"}
-              </button>
+              </ParticleButton>
               <a
                 className={`${BUTTON} border-line bg-surface text-accent underline`}
                 download={`accessforge-plan-${plan.dataset}-${plan.budget}.csv`}

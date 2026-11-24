@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from . import review_repository
 from .auth import COOKIE_NAME, SESSION_SECONDS, Reviewer, reviewer_for_key
 from .database import get_session
+from .pilot_plans import request_refresh
 from .report_limits import record_failed_sign_in, refuse_locked_out
 from .responses import Envelope
 from .review_schemas import (
@@ -81,6 +82,7 @@ def review_report(
         raise HTTPException(404) from error
     except ReviewConflict as error:
         raise HTTPException(409) from error
+    request_refresh()  # a state change can add, keep or drop the barrier in the pilot plans
     return Envelope(data=review)
 
 

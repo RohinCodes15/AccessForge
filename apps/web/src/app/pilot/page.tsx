@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
 import { PilotDashboard } from "@/components/pilot/PilotDashboard";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { configuredFeedbackEmail } from "@/lib/feedback-email";
 import { findNavItem } from "@/lib/navigation";
 
 const item = findNavItem("/pilot");
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const metadata: Metadata = { title: item.label };
 
 export default function Page() {
-  // Server-side setting; the page says so when no feedback contact is configured.
-  const configured = process.env.FEEDBACK_EMAIL?.trim() ?? "";
-  const feedbackEmail = EMAIL_PATTERN.test(configured) ? configured : null;
+  const feedbackEmail = configuredFeedbackEmail();
   return (
     <>
       <PageHeader title={item.label}>

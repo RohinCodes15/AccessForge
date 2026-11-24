@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import corridor from "@/test/corridor-plan.json";
 import {
+  barriersAsOfText,
   dataUri,
   exportNotice,
   fetchPlan,
@@ -18,6 +19,19 @@ const plan = corridor as Plan;
 const signal = () => new AbortController().signal;
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe("barriersAsOfText", () => {
+  it("says which reports and reviews a pilot plan includes", () => {
+    const pilot = { ...plan, barriers_as_of: "2026-11-23T20:15:00Z" };
+
+    expect(barriersAsOfText(pilot)).toMatch(/^Includes reports and reviews recorded up to .+2026/);
+  });
+
+  it("says nothing for plans without a barrier timestamp", () => {
+    expect(barriersAsOfText(plan)).toBeNull();
+    expect(barriersAsOfText({ ...plan, barriers_as_of: "not a date" })).toBeNull();
+  });
+});
 
 describe("parseBudget", () => {
   it.each([

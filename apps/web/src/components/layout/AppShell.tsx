@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { MotionRoot } from "@/components/motion/MotionRoot";
+import { TextRipples } from "@/components/motion/TextRipples";
 import { DISCLAIMERS } from "@/lib/disclaimers";
 import { CommandPalette } from "./CommandPalette";
 import { Navigation } from "./Navigation";
@@ -13,6 +14,8 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
   return (
     // One motion provider for the whole app; it honours the visitor's reduced-motion setting.
     <MotionRoot>
+      {/* Headings and labels ripple letter by letter as they come into view (not on Overview). */}
+      <TextRipples />
       <div className="min-h-full lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
         <a
           href={`#${MAIN_CONTENT_ID}`}

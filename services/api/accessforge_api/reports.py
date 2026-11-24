@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from . import report_repository
 from .auth import MaybeReviewer
 from .database import get_session
+from .pilot_plans import request_refresh
 from .report_limits import limit_submission
 from .report_schemas import (
     DEFAULT_PAGE_SIZE,
@@ -36,6 +37,7 @@ def submit_report(
     payload: ReportCreate, session: DatabaseSession, response: Response
 ) -> Envelope[ReportView]:
     report = report_repository.create_report(session, payload)
+    request_refresh()  # the new barrier enters the pilot plans on the next refresh
     response.headers["Location"] = f"/reports/{report.id}"
     return Envelope(data=report)
 

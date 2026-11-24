@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
+import ParticleButton from "@/components/kokonutui/particle-button";
+import { useActionStatus } from "@/components/motion/use-action-status";
 import { FieldError, INPUT_CLASS } from "@/components/report/ReportField";
 
 export const FEEDBACK_TOPICS = {
@@ -30,14 +32,23 @@ async function sendFeedback(topic: Topic, message: string, website: string): Pro
   if (!response.ok) throw new Error("Your feedback could not be saved. Please try again.");
 }
 
-export function FeedbackForm() {
-  const [topic, setTopic] = useState<Topic | "">("");
+type Props = {
+  /** Accessible name of the form. */
+  readonly label?: string;
+  /** Topic chosen on arrival and after each send, for pages about one topic. */
+  readonly initialTopic?: Topic;
+};
+
+export function FeedbackForm({ label = "Pilot feedback", initialTopic }: Props) {
+  const startTopic: Topic | "" = initialTopic ?? "";
+  const [topic, setTopic] = useState<Topic | "">(startTopic);
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<{ topic?: string; message?: string }>({});
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [failure, setFailure] = useState("");
   const honeypot = useRef<HTMLInputElement>(null);
   const resultRef = useRef<HTMLParagraphElement>(null);
+  const sendStatus = useActionStatus(status === "sending", failure ? "error" : "success");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,7 +67,7 @@ export function FeedbackForm() {
     try {
       await sendFeedback(topic, message.trim(), honeypot.current?.value ?? "");
       setStatus("sent");
-      setTopic("");
+      setTopic(startTopic);
       setMessage("");
     } catch (error) {
       setStatus("idle");
@@ -66,12 +77,7 @@ export function FeedbackForm() {
   }
 
   return (
-    <form
-      noValidate
-      onSubmit={submit}
-      aria-label="Pilot feedback"
-      className="mt-4 max-w-prose space-y-4"
-    >
+    <form noValidate onSubmit={submit} aria-label={label} className="mt-4 max-w-prose space-y-4">
       <p className="text-sm text-muted">
         Anonymous: we store only the topic, your message, and the time. Please leave out names,
         contact details, and private information about anyone.
@@ -122,13 +128,16 @@ export function FeedbackForm() {
         <label htmlFor="feedback-website">Leave this field empty</label>
         <input id="feedback-website" ref={honeypot} tabIndex={-1} autoComplete="off" />
       </div>
-      <button
+      <ParticleButton
         type="submit"
-        disabled={status === "sending"}
-        className="inline-flex min-h-11 items-center rounded-md bg-accent px-5 font-semibold text-surface hover:bg-ink disabled:opacity-60"
+        variant="accent"
+        status={sendStatus}
+        pendingLabel="Sending…"
+        successLabel="Sent"
+        errorLabel="Not sent"
       >
-        {status === "sending" ? "Sending…" : "Send feedback"}
-      </button>
+        Send feedback
+      </ParticleButton>
       {status === "sent" || failure ? (
         <p
           ref={resultRef}

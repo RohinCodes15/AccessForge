@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { FeedbackForm } from "@/components/pilot/FeedbackForm";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { configuredFeedbackEmail } from "@/lib/feedback-email";
 
 export const metadata: Metadata = { title: "Accessibility" };
 
+const EMAIL_SUBJECT = "AccessForge accessibility problem";
+
 export default function AccessibilityPage() {
+  const email = configuredFeedbackEmail();
   return (
     <>
       <PageHeader title="Accessibility">
@@ -33,9 +38,22 @@ export default function AccessibilityPage() {
         </Card>
         <Card title="Reporting a problem">
           <p>
-            A way to report accessibility problems with AccessForge will be added before public
-            launch.
+            If anything on this site gets in your way, tell us: a screen reader, keyboard, zoom,
+            contrast, motion, or anything else. Messages are stored for the AccessForge team.
           </p>
+          <FeedbackForm label="Report an accessibility problem" initialTopic="accessibility" />
+          {email ? (
+            <p className="mt-4 max-w-prose">
+              Prefer email, or cannot use the form? Write to{" "}
+              <a
+                className="font-semibold text-accent underline"
+                href={`mailto:${email}?subject=${encodeURIComponent(EMAIL_SUBJECT)}`}
+              >
+                {email}
+              </a>
+              . Email is the way to get a reply; the form is anonymous and cannot send one.
+            </p>
+          ) : null}
         </Card>
       </div>
     </>

@@ -144,7 +144,8 @@ it("shows no earlier result when a retry fails", async () => {
   await checkRoute(user);
   respondWith(() => Promise.resolve(new Response("{}", { status: 500 })));
 
-  await user.click(screen.getByRole("button", { name: CHECK }));
+  // Waits out the previous check's success label on the particle button.
+  await user.click(await screen.findByRole("button", { name: CHECK }, { timeout: 3000 }));
 
   expect(await screen.findByText(/could not complete this check/)).toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: SUMMARY })).not.toBeInTheDocument();
@@ -172,7 +173,8 @@ it("sends the last seen snapshot and explains a stale one", async () => {
   await checkRoute(user);
   respondWith(() => Promise.resolve(new Response("{}", { status: 409 })));
 
-  await user.click(screen.getByRole("button", { name: CHECK }));
+  // Waits out the previous check's success label on the particle button.
+  await user.click(await screen.findByRole("button", { name: CHECK }, { timeout: 3000 }));
 
   expect(
     await screen.findByText(

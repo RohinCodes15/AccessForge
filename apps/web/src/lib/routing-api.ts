@@ -1,5 +1,5 @@
 // Mirrors FastAPI's RouteAnalysisView (services/api/accessforge_api/routing_schemas.py).
-// Every route is a modeled path on a synthetic network, never a safe-route determination.
+// Every route is a modeled path on the Fremont pilot or a synthetic network, never a safe-route determination.
 import { fetchPlan, formatNumber, type Dataset, type Network } from "./planning-api";
 
 export type RouteStatus = "accessible" | "uncertain" | "no_route";

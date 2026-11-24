@@ -15,9 +15,9 @@ A route is usable only if every piece of it is. Repair lists that rank barriers 
 | Barrier reporting, map with an equivalent list, filters | Working. Stored in PostgreSQL/PostGIS |
 | Reviewer sign-in, verify/reject with an append-only audit log | Working |
 | Report text hidden from the public until a reviewer confirms it | Working |
-| Repair planner: budget, four methods compared, explanations, saved scenarios, CSV/JSON/print | Working, **on synthetic networks only** |
+| Repair planner: budget, four methods compared, explanations, saved scenarios, CSV/JSON/print | Working. Default network: **real Fremont streets (OSM) with unverified barriers**, budget in repair units (0 to 2), not dollars. Generated example networks also available |
 | Pilot dashboard: counts by status and type, CSV, anonymous feedback form | Working |
-| Fremont network, destinations, population (OSM, Census, CDC PLACES) | Ingested for the pilot area; **not yet connected to the planner** |
+| Fremont network, destinations, population (OSM, Census, CDC PLACES) | Ingested for the pilot area; the planner and route analysis use it by default |
 | Repair tracking: reviewers move verified barriers through repair planned → repair completed → resolved, each step in the append-only audit log; pilot dashboard counts repairs | Working. Statuses are reviewer records, not City records |
 | Real repair costs, photos, equity-targeted planning | Not built |
 | Deployment | **Not deployed.** Runs locally; see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
