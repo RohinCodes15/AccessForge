@@ -1,5 +1,42 @@
 import { describe, expect, it } from "vitest";
-import { BASEMAP_ORIGINS, OPENFREEMAP_STYLE_URL, basemap } from "./basemap";
+import {
+  BASEMAP_ORIGINS,
+  CALIFORNIA_BOUNDS,
+  OPENFREEMAP_STYLE_URL,
+  basemap,
+  clampToCalifornia,
+} from "./basemap";
+
+describe("clampToCalifornia", () => {
+  it("keeps bounds that already sit inside California", () => {
+    const fremont: [[number, number], [number, number]] = [
+      [-122.1, 37.4],
+      [-121.9, 37.6],
+    ];
+    expect(clampToCalifornia(fremont)).toEqual(fremont);
+  });
+
+  it("trims bounds that a far-away report stretched past the state line", () => {
+    expect(
+      clampToCalifornia([
+        [-122.1, 37.4],
+        [-73.9, 40.7],
+      ]),
+    ).toEqual([
+      [-122.1, 37.4],
+      [-114.1, 40.7],
+    ]);
+  });
+
+  it("falls back to all of California when the bounds miss it entirely", () => {
+    expect(
+      clampToCalifornia([
+        [-74.1, 40.6],
+        [-73.9, 40.8],
+      ]),
+    ).toEqual(CALIFORNIA_BOUNDS);
+  });
+});
 
 describe("basemap", () => {
   it("uses keyless OpenFreeMap when no MapTiler key is configured", () => {

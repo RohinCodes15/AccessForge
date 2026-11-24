@@ -41,7 +41,8 @@ it("loads real reports into map/list, fetches details, filters and paginates", a
   await waitFor(() => expect(fakeMapControl.instances).toHaveLength(1));
   act(() => fakeMapControl.instances[0].emit("load"));
   expect(await screen.findByRole("button", { name: /^Report .*Obstruction/ })).toBeInTheDocument();
-  expect(fakeMapControl.instances[0].fitBounds).toHaveBeenCalled();
+  // The opening flyover owns the camera, as on the homepage, so markers do not reframe it.
+  expect(fakeMapControl.instances[0].flyTo).toHaveBeenCalled();
   await user.click(button);
   expect(
     within(await screen.findByRole("region", { name: `Report ${report.id}` })).getByText(

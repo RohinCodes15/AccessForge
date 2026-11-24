@@ -58,6 +58,13 @@ async function fillRequired() {
 }
 
 describe("ReportForm", () => {
+  it("opens the location map with the same zoom-in flyover as the homepage", async () => {
+    const { map } = await loadedForm();
+
+    expect(map.options).toEqual(expect.objectContaining({ pitch: 0, zoom: 11.5 }));
+    expect(map.flyTo).toHaveBeenCalledWith(expect.objectContaining({ pitch: 70 }));
+  });
+
   it("focuses an accessible error summary and links to required fields", async () => {
     await loadedForm();
     await userEvent.setup().click(screen.getByRole("button", { name: "Submit report" }));

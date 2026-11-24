@@ -51,6 +51,7 @@ export function HomeMapPreview({
         onSelect={() => router.push("/barriers")}
         className={mapClassName}
         isFlyover
+        isPreview
         isWheelZoomOff={isWheelZoomOff}
       />
       <div className="flex flex-wrap items-center justify-between gap-3">

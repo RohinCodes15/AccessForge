@@ -5,7 +5,14 @@ import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 import { useEffect, useEffectEvent, useRef, useState, type ReactNode, type RefObject } from "react";
 import type { BadgeTone } from "@/components/ui/Badge";
 import { verificationDisplay, barrierSummary, type Barrier, type LngLat } from "@/lib/barriers";
-import { FREMONT_CENTER, FREMONT_ZOOM, MAX_FIT_ZOOM, basemap } from "@/lib/basemap";
+import {
+  CALIFORNIA_BOUNDS,
+  FREMONT_CENTER,
+  FREMONT_ZOOM,
+  MAX_FIT_ZOOM,
+  basemap,
+  clampToCalifornia,
+} from "@/lib/basemap";
 import { fetchStreets, lockBounds, streetBounds } from "@/lib/network-api";
 
 import { MapLocationSelection } from "./MapLocationSelection";
@@ -38,6 +45,8 @@ type BarrierMapProps = {
   readonly children?: ReactNode;
   /** Opens with a 3D camera flyover of Fremont instead of framing the markers. */
   readonly isFlyover?: boolean;
+  /** Selecting a marker leaves the map, so no selection highlight is drawn or keyed. */
+  readonly isPreview?: boolean;
   /** Leaves the mouse wheel to the page, for maps inside a scroll-driven story. */
   readonly isWheelZoomOff?: boolean;
 };
@@ -158,6 +167,7 @@ function useMapInstance(
         container,
         style: BASEMAP.styleUrl,
         ...view,
+        maxBounds: CALIFORNIA_BOUNDS,
         locale: { "Map.Title": MAP_TITLE },
         // Expanded attribution is plain inline text, so it needs no small toggle button.
         attributionControl: { compact: false },
@@ -206,6 +216,7 @@ export function BarrierMap({
   className = "h-80 sm:h-[28rem]",
   children,
   isFlyover = false,
+  isPreview = false,
   isWheelZoomOff = false,
 }: BarrierMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -239,7 +250,8 @@ export function BarrierMap({
       if (!network || !network.lines.length || controller.signal.aborted) return;
       const streets = streetBounds(network);
       // Every map, picker included, keeps panning on the pilot area.
-      const lock = () => loaded.map.setMaxBounds(lockBounds(streets, markerBounds()));
+      const lock = () =>
+        loaded.map.setMaxBounds(clampToCalifornia(lockBounds(streets, markerBounds())));
       if (ownsCamera()) {
         // Clamping mid-flight would cut the opening camera move short; lock once it lands.
         if (loaded.map.isMoving()) loaded.map.once("moveend", lock);
@@ -295,7 +307,7 @@ export function BarrierMap({
   }, [loaded, selectedId]);
 
   // Selecting a barrier lights up the footpaths around it; clearing the selection clears them.
-  const showsReach = !isFlyover && onLocationSelect === undefined;
+  const showsReach = !isPreview && onLocationSelect === undefined;
   const reachCenter = barriers.find((barrier) => barrier.id === selectedId)?.location;
   const reachLng = showsReach ? reachCenter?.lng : undefined;
   const reachLat = showsReach ? reachCenter?.lat : undefined;

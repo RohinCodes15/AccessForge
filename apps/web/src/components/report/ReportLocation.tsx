@@ -56,6 +56,7 @@ export function ReportLocation({ draft, errors, onEdit, onSelect }: Props) {
         onSelect={() => {}}
         onLocationSelect={onSelect}
         location={location}
+        isFlyover
       />
       <dl aria-label="Selected location" aria-live="polite" className="text-sm text-muted">
         <div>

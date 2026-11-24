@@ -57,6 +57,19 @@ describe("BarrierMap", () => {
     expect(markerButtons()).toHaveLength(SAMPLE_BARRIERS.length);
   });
 
+  it("keeps panning inside California before any street network loads", async () => {
+    render(
+      <BarrierMap barriers={SAMPLE_BARRIERS} selectedId={null} onSelect={() => {}} isFlyover />,
+    );
+
+    const map = await createdMap();
+
+    expect(map.options.maxBounds).toEqual([
+      [-124.5, 32.5],
+      [-114.1, 42.0],
+    ]);
+  });
+
   it("selects a barrier when its marker is activated with the keyboard", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
@@ -326,6 +339,22 @@ describe("BarrierMap cityscape", () => {
         onSelect={() => {}}
         onLocationSelect={() => {}}
       />,
+    );
+    expect(key()).not.toHaveTextContent("within 200 m");
+  });
+
+  it("keeps the barrier reach on a flyover map, and drops it only on a preview", async () => {
+    // Arrange & Act
+    const { rerender } = render(
+      <BarrierMap barriers={[]} selectedId={null} onSelect={() => {}} isFlyover />,
+    );
+    await createdMap();
+    const key = () => screen.getByRole("list", { name: "Map key" });
+
+    // Assert
+    expect(key()).toHaveTextContent("within 200 m");
+    rerender(
+      <BarrierMap barriers={[]} selectedId={null} onSelect={() => {}} isFlyover isPreview />,
     );
     expect(key()).not.toHaveTextContent("within 200 m");
   });

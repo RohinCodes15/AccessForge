@@ -48,6 +48,14 @@ describe("Barriers page", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("opens the map with the same zoom-in flyover as the homepage", async () => {
+    await renderLoadedPage();
+
+    const map = fakeMapControl.instances.at(-1)!;
+    expect(map.options).toEqual(expect.objectContaining({ pitch: 0, zoom: 11.5 }));
+    expect(map.flyTo).toHaveBeenCalledWith(expect.objectContaining({ pitch: 70 }));
+  });
+
   it("lists every sample barrier with its status and source in text", async () => {
     await renderLoadedPage();
 

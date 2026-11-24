@@ -5,6 +5,32 @@ import type { LngLat } from "./barriers";
 
 export const FREMONT_CENTER: LngLat = { lng: -121.9886, lat: 37.5485 };
 export const FREMONT_ZOOM = 13;
+/**
+ * The furthest a map can pan or zoom out: California, [west, south] to [east, north]. Maps lock
+ * tighter to the pilot street network once it loads; this holds when it is unavailable.
+ */
+export const CALIFORNIA_BOUNDS: [[number, number], [number, number]] = [
+  [-124.5, 32.5],
+  [-114.1, 42.0],
+];
+
+/** The part of `bounds` inside California, or all of California when they do not overlap. */
+export function clampToCalifornia(
+  bounds: [[number, number], [number, number]],
+): [[number, number], [number, number]] {
+  const [[minW, minS], [maxE, maxN]] = CALIFORNIA_BOUNDS;
+  const [[w, s], [e, n]] = bounds;
+  const west = Math.max(w, minW);
+  const south = Math.max(s, minS);
+  const east = Math.min(e, maxE);
+  const north = Math.min(n, maxN);
+  return west < east && south < north
+    ? [
+        [west, south],
+        [east, north],
+      ]
+    : CALIFORNIA_BOUNDS;
+}
 /** Closest zoom used when framing markers, so a single report still shows its surroundings. */
 export const MAX_FIT_ZOOM = 16;
 

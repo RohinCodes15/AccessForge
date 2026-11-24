@@ -72,6 +72,7 @@ export function BarrierExplorer({
           selectedId={selected?.id ?? null}
           onSelect={select}
           className="h-[60svh] min-h-80 lg:h-auto lg:min-h-[24rem] lg:flex-1"
+          isFlyover
         >
           <MapLegend />
         </BarrierMap>

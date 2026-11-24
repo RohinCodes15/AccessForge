@@ -11,6 +11,7 @@ type MapOptions = {
   zoom?: number;
   pitch?: number;
   style?: unknown;
+  maxBounds?: [LngLatTuple, LngLatTuple];
 };
 
 export const fakeMapControl = { throwOnCreate: false, instances: [] as FakeMap[] };
