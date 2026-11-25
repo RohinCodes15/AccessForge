@@ -15,14 +15,16 @@ const nextConfig: NextConfig = {
     ) {
       throw new Error("API_BASE_URL must be an HTTP(S) origin without credentials or a path.");
     }
+    // A bare path gets its own rule: on Vercel an empty `:path*` becomes a trailing slash,
+    // which the API answers with a redirect to its own origin that the browser cannot follow.
+    const prefixed = ["trips", "reports", "planning", "reviewer", "routing"].flatMap((name) => [
+      { source: `/api/${name}`, destination: `${origin.origin}/${name}` },
+      { source: `/api/${name}/:path+`, destination: `${origin.origin}/${name}/:path+` },
+    ]);
     return [
-      { source: "/api/trips/:path*", destination: `${origin.origin}/trips/:path*` },
-      { source: "/api/reports/:path*", destination: `${origin.origin}/reports/:path*` },
-      { source: "/api/planning/:path*", destination: `${origin.origin}/planning/:path*` },
-      { source: "/api/reviewer/:path*", destination: `${origin.origin}/reviewer/:path*` },
+      ...prefixed,
       { source: "/api/feedback", destination: `${origin.origin}/feedback` },
       { source: "/api/network/streets", destination: `${origin.origin}/network/streets` },
-      { source: "/api/routing/:path*", destination: `${origin.origin}/routing/:path*` },
     ];
   },
   async headers() {

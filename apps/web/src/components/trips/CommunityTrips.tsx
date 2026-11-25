@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { isReportId } from "@/lib/reports-api";
+import { SAMPLE_LANDMARKS, SAMPLE_TRIPS } from "@/lib/sample-trips";
 import ParticleButton from "@/components/kokonutui/particle-button";
 import { useActionStatus } from "@/components/motion/use-action-status";
 import { LandmarkSearch } from "./LandmarkSearch";
@@ -166,12 +167,18 @@ function Failure({ message, retry }: { message: string; retry: () => void }) {
   );
 }
 
+const OFFLINE_NOMINATION =
+  "Nominations cannot be saved while the trip service is unavailable. Please try again later.";
+
 function Nominate({
   landmarks,
   refresh,
+  isOffline = false,
 }: {
-  landmarks: Landmark[];
+  landmarks: readonly Landmark[];
   refresh: (id: string) => void;
+  /** Sample view: the form works for browsing, but nothing can be sent. */
+  isOffline?: boolean;
 }) {
   const [start, setStart] = useState(""),
     [end, setEnd] = useState("");
@@ -193,6 +200,7 @@ function Nominate({
     setWasAttempted(true);
     if (!start || !end || invalid) return;
     await action.run(async () => {
+      if (isOffline) throw new Error(OFFLINE_NOMINATION);
       const { data: created } = await post<{ id: string }>("", {
         start_key: start,
         end_key: end,
@@ -284,29 +292,36 @@ function SavedTrips({
   total,
   limit,
   onPage,
+  isSample = false,
 }: {
-  data: Trip[];
+  data: readonly Trip[];
   page: number;
   total: number;
   limit: number;
   onPage: (page: number) => void;
+  /** Sample trips have no detail page, so they are listed as text, not links. */
+  isSample?: boolean;
 }) {
   return (
     <>
       <p className="text-sm text-muted" role="status">
-        {total} saved {total === 1 ? "trip" : "trips"}
+        {total} {isSample ? "example" : "saved"} {total === 1 ? "trip" : "trips"}
         {total > limit ? ` · Page ${page} of ${Math.ceil(total / limit)}` : ""}
       </p>
       {data.length ? (
         <ul className="divide-y divide-line">
           {data.map((t) => (
             <li key={t.id} className="py-3">
-              <Link
-                className="af-link inline-flex min-h-11 items-center break-words"
-                href={tripLink(t.id)}
-              >
-                {label(t)}
-              </Link>
+              {isSample ? (
+                <p className="font-semibold break-words">{label(t)}</p>
+              ) : (
+                <Link
+                  className="af-link inline-flex min-h-11 items-center break-words"
+                  href={tripLink(t.id)}
+                >
+                  {label(t)}
+                </Link>
+              )}
               <p className="text-sm text-muted">
                 {purposes[t.purpose]}
                 {t.field_nominated ? " · Field nomination" : ""}
@@ -385,11 +400,14 @@ function Board() {
         </div>
       )}
       {error ? (
-        <Failure message={error} retry={reload} />
+        <SampleBoard />
       ) : !data ? (
         <p role="status">Loading community trips…</p>
       ) : !Array.isArray(data.landmarks) || !Array.isArray(data.trips) || !meta?.limit ? (
         <Failure message="The trip catalog could not be read." retry={reload} />
+      ) : !data.landmarks.length && !data.trips.length ? (
+        // No pilot landmarks are loaded yet, so nothing can be nominated: show examples.
+        <SampleBoard />
       ) : (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           <Nominate
@@ -418,6 +436,29 @@ function Board() {
           </section>
         </div>
       )}
+    </div>
+  );
+}
+
+// The live catalog failed: show example trips instead of a dead end. They are titled as
+// examples, never as saved community trips, because nobody nominated them.
+function SampleBoard() {
+  return (
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      <Nominate landmarks={SAMPLE_LANDMARKS} refresh={() => {}} isOffline />
+      <section aria-labelledby="example-trips" className={card}>
+        <h2 id="example-trips" className="af-h2">
+          Example trips
+        </h2>
+        <SavedTrips
+          data={SAMPLE_TRIPS}
+          page={1}
+          total={SAMPLE_TRIPS.length}
+          limit={SAMPLE_TRIPS.length}
+          onPage={() => {}}
+          isSample
+        />
+      </section>
     </div>
   );
 }

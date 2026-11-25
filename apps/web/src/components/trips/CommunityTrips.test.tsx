@@ -64,24 +64,22 @@ it("keeps the draft after a failed nomination and opens the server receipt after
   });
 });
 
-it("retries the catalog and browses later pages without clearing the form", async () => {
+it("browses later pages without clearing the form", async () => {
   const fetch = vi
     .fn()
-    .mockResolvedValueOnce(new Response(null, { status: 503 }))
     .mockResolvedValueOnce(catalog([trip], 1, 2))
     .mockResolvedValueOnce(catalog([{ ...trip, start_name: "Park" }], 2, 2));
   vi.stubGlobal("fetch", fetch);
   const user = userEvent.setup();
   render(<CommunityTrips />);
-  await user.click(await screen.findByRole("button", { name: "Retry" }));
   await pick(user, "Start landmark", landmarks[0].name);
   await user.click(screen.getByRole("button", { name: "Next trips" }));
   expect(await screen.findByRole("link", { name: "Park to Library" })).toBeVisible();
   expect(screen.getByRole("combobox", { name: "Start landmark" })).toHaveValue(landmarks[0].name);
-  expect(fetch.mock.calls[2][0]).toBe("/api/trips?page=2");
+  expect(fetch.mock.calls[1][0]).toBe("/api/trips?page=2");
 });
 
-it("cannot nominate without landmarks and never fabricates trips", async () => {
+it("shows example trips, never as saved ones, while no landmarks are loaded", async () => {
   vi.stubGlobal(
     "fetch",
     vi.fn().mockResolvedValue(
@@ -92,21 +90,30 @@ it("cannot nominate without landmarks and never fabricates trips", async () => {
     ),
   );
   render(<CommunityTrips />);
-  expect(await screen.findByText(/Two mapped public landmarks/)).toBeVisible();
-  expect(
-    within(screen.getByRole("region", { name: "Saved community trips" })).getByText(
-      /No trips saved/,
-    ),
-  ).toBeVisible();
-  expect(screen.queryByRole("button", { name: "Nominate trip" })).toBeNull();
+  const examples = within(await screen.findByRole("region", { name: "Example trips" }));
+  expect(examples.getByRole("status")).toHaveTextContent("5 example trips");
+  expect(screen.queryByRole("region", { name: "Saved community trips" })).toBeNull();
 });
 
-it("says the service is unavailable, not that a trip is missing, when the catalog 404s", async () => {
+it("falls back to labelled sample trips, not an error, when the catalog 404s", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
+  const user = userEvent.setup();
   render(<CommunityTrips />);
-  const alert = await screen.findByRole("alert");
-  expect(alert).toHaveTextContent("trip service is not available");
-  expect(alert).not.toHaveTextContent("could not be found");
+
+  const saved = within(await screen.findByRole("region", { name: "Example trips" }));
+  expect(screen.queryByRole("complementary")).toBeNull();
+  expect(screen.queryByText(/trip service is not available/)).toBeNull();
+  expect(screen.queryByRole("region", { name: "Saved community trips" })).toBeNull();
+  expect(saved.getByText("Fremont (BART station) to Fremont Main Library")).toBeVisible();
+  expect(saved.getByRole("status")).toHaveTextContent("5 example trips");
+  // Sample trips have no detail page to open.
+  expect(saved.queryAllByRole("link")).toHaveLength(0);
+
+  await pick(user, "Start landmark", "Fremont Main Library");
+  await pick(user, "End landmark", "Washington Hospital");
+  await user.selectOptions(screen.getByLabelText("Why this trip matters"), "education");
+  await user.click(screen.getByRole("button", { name: "Nominate trip" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("cannot be saved");
 });
 
 it("asks for both landmarks when the form is sent without choosing them", async () => {
