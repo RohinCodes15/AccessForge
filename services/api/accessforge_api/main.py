@@ -46,7 +46,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         finally:
             engine.dispose()
 
-    app = FastAPI(title="AccessForge API", version="0.1.0", lifespan=lifespan)
+    # The API is public: no interactive docs or schema routes advertising every endpoint.
+    app = FastAPI(
+        title="AccessForge API",
+        version="0.1.0",
+        lifespan=lifespan,
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
+    )
     register_handlers(app)
     app.include_router(router)
     app.include_router(reports_router)

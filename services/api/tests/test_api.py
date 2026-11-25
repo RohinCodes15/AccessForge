@@ -60,6 +60,12 @@ def test_only_documented_routes_exist() -> None:
         assert response.json()["error"]["code"] == "http_error"
 
 
+def test_interactive_docs_and_schema_are_not_served() -> None:
+    with TestClient(application()) as client:
+        for path in ("/docs", "/redoc", "/openapi.json", "/docs/oauth2-redirect"):
+            assert client.get(path).status_code == 404, path
+
+
 def test_invalid_payload_uses_sanitized_field_errors() -> None:
     app = application()
 
