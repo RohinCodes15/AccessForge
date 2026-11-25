@@ -1,0 +1,7 @@
+# Local-only files that must never reach a Vercel build.
+.env*
+!.env.example
+.next
+coverage
+playwright-report
+test-results

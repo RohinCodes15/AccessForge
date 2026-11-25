@@ -1,0 +1,3 @@
+# Installed by Vercel for the API function in api/index.py. accessforge-api brings in
+# accessforge-engine through its own [tool.uv.sources] path entry.
+accessforge-api @ ./services/api

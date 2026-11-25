@@ -8,3 +8,8 @@ graphify-out/
 !.env.example
 # Hypothesis test database (local cache).
 .hypothesis/
+
+# Vercel project link (API project at the repository root)
+.vercel/
+.env*
+!.env.example

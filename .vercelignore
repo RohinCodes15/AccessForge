@@ -1,0 +1,24 @@
+# Upload for the accessforge-api Vercel project: only the API entry and Python packages.
+# The website deploys separately from apps/web with its own .vercelignore.
+/*
+!/api
+!/requirements.txt
+!/services
+/services/*
+!/services/api
+!/services/engine
+
+# Never ship local secrets, caches, tests, or build output.
+**/.env
+**/.env.*
+**/.venv
+**/__pycache__
+**/*.egg-info
+**/build
+**/dist
+**/tests
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.coverage
+/services/engine/benchmarks
